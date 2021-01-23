@@ -374,18 +374,20 @@ def findOutliers(time, flux, gap=None,
     same units.
     """
 
-    assert not np.all(gap), "Can't find outliers if all data is gapped"
+    if np.all(gap):
+        raise Exception("Can't find outliers if all data is gapped")
 
     if gap is None:
         gap = np.zeros_like(flux, dtype=bool)
-    indices = np.zeros_like(gap)
 
+    indices = np.zeros_like(gap)
     # Remove as much signal as possible from the data
     # fluxDetrended = medianDetrend(flux, 3)
     fluxDetrended = np.diff(flux)
     fluxDetrended = np.append(fluxDetrended, [0])  # Keep the length the same
     # import pdb; pdb.set_trace()
-    assert len(fluxDetrended) == len(flux)
+    if len(fluxDetrended) != len(flux):
+        raise NotImplementedError('Removed "assert" statement - per request of bandit')
 
     # Find outliers as too far away from the mean.
     rms = robustStd(fluxDetrended[~gap])
@@ -433,7 +435,8 @@ def findPeriodicOutliers(time_days, singleOutlierIndex, precision_days):
         set(notOutliers) is a wholly owned subset of set(singleOutlierIndices)
     """
 
-    assert len(time_days) == len(singleOutlierIndex)
+    if len(time_days) != len(singleOutlierIndex):
+        raise NotImplementedError('Removed "assert" statement - per request of bandit')
 
     # Convert to list of indices
     singleOutliers = np.where(singleOutlierIndex)[0]
@@ -462,12 +465,16 @@ def findPeriodicOutliers(time_days, singleOutlierIndex, precision_days):
             notOutliers.extend(singleOutliers)
 
     # import pdb; pdb.set_trace()
-    assert set(notOutliers).issubset(singleOutliers)
+    if not set(notOutliers).issubset(singleOutliers):
+        raise NotImplementedError('Removed "assert" statement - per request of bandit')
+
     return notOutliers
 
 
 def robustStd(y):
-    assert len(y) > 0
+    if len(y) < 1:
+        raise NotImplementedError('Removed "assert" statement - per request of bandit')
+
     mad = y - np.median(y)
     mad = np.median(np.fabs(mad))
 
