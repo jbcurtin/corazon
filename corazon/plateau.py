@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import numpy as np
-
-__version__ = "$Id: plateau.py 18 2019-02-11 15:59:10Z fergalm $"
-__URL__ = "$URL: https://svn.code.sf.net/p/greataunttess/code/trunk/plateau.py $"
-
 """
 Find continuous regions in an array above some value
 
@@ -12,8 +5,15 @@ This code gets called in lots of places, but doesn't really belong in
 any of my other modules
 """
 
+__version__ = "$Id: plateau.py 18 2019-02-11 15:59:10Z fergalm $"
+__URL__ = "$URL: https://svn.code.sf.net/p/greataunttess/code/trunk/plateau.py $"
+
+import numpy as np
+
+
 def plateau(array, threshold):
-    """Find plateaus in an array, i.e continuous regions that exceed threshold
+    """
+    Find plateaus in an array, i.e continuous regions that exceed threshold
 
     Given an array of numbers, return a 2d array such that
     out[:,0] marks the indices where the array crosses threshold from
@@ -43,17 +43,14 @@ def plateau(array, threshold):
     to ensure floating point arithmetic prevents two numbers being
     exactly equal.
     """
-
-
-    arr  = array.astype(np.float32)
+    arr = array.astype(np.float32)
     arr = arr - threshold + 1e-12
     arrPlus = np.roll(arr, 1)
 
-    #Location of changes from -ve to +ve (or vice versa)
-    #Last point is bogus , so we calcualte it by hand
+    # Location of changes from -ve to +ve (or vice versa)
+    # Last point is bogus , so we calcualte it by hand
     sgnChange = arr*arrPlus
-
-    #Roll around can't compute sign change for zeroth elt.
+    # Roll around can't compute sign change for zeroth elt.
     sgnChange[0] = +1
     if arr[0] > 0:
         sgnChange[0] = -1
@@ -61,10 +58,11 @@ def plateau(array, threshold):
     loc = np.where(sgnChange < 0)[0]
     loc = loc.copy()
 
-    if np.fmod( len(loc), 2) != 0:
-        loc.resize( (len(loc)+1))
+    if np.fmod(len(loc), 2) != 0:
+        loc.resize((len(loc) + 1))
         loc[-1] = len(arr)
 
     if len(loc) == 0:
         return []
-    return loc.reshape( (-1,2))
+
+    return loc.reshape((-1, 2))
