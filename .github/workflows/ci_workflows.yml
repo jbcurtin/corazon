@@ -43,25 +43,15 @@ jobs:
           #  toxenv: py37-test-oldestdeps
 
           # APPEND -cov TO toxenv FOR COVERAGE
-          - name: Linux - Python 3.9
+          - name: Linux - Python 3.7
             os: ubuntu-latest
-            python: 3.9
-            toxenv: py39-test
+            python: 3.7
+            toxenv: py37-test
 
           - name: OS X - Python 3.7
             os: macos-latest
             python: 3.7
             toxenv: py37-test
-
-          - name: Windows - Python 3.8
-            os: windows-latest
-            python: 3.8
-            toxenv: py38-test
-
-          - name: Python 3.9 with latest dev versions of key dependencies
-            os: ubuntu-latest
-            python: 3.9
-            toxenv: py39-test-devdeps
 
     steps:
     - name: Checkout code
