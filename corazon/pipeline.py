@@ -130,7 +130,6 @@ def get_disposition(metrics, thresholds):
 
     disp = 'PASS'
     reason = ''
-    # Is this meant to all be if-statements? Or if-else?
     if metrics['snr'] < thresholds['snr']:
         disp = 'FAIL'
         reason = reason + "-LowSNR-"
