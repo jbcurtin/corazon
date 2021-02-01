@@ -64,3 +64,7 @@ pip-wheel-metadata/
 lib
 lib64
 pyvenv.cfg
+share
+
+# Datafiles
+tess-data

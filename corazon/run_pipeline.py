@@ -42,57 +42,38 @@ def run_write_one(ticid, sector, out_dir, lc_author='qlp', run_tag=None, config_
 
     vetter_list = load_def_vetter()
     thresholds = load_def_thresholds()
-    target_dir = "/tic%09is%02i/" % (int(ticid), sector)
-    log_name = out_dir + target_dir + "tic%09i-%s.log" % (ticid, run_tag)
-    output_file = out_dir + target_dir + "tic%09i-%s-tcesum.csv" % (ticid, run_tag)
+    target_dir = "tic%09is%02i" % (int(ticid), sector)
+    log_name = os.path.join(out_dir, target_dir, "tic%09i-%s.log" % (ticid, run_tag))
+    output_file = os.path.join(out_dir, target_dir, "tic%09i-%s-tcesum.csv" % (ticid, run_tag))
+    output_dir = os.path.join(out_dir, target_dir)
 
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    try:
-        os.mkdir(out_dir+target_dir)
+    tce_list, result_strings, metrics_list = pipeline.search_and_vet_one(ticid, sector, lc_author, config,
+                                                                         vetter_list, thresholds, plot=plot)
+    if tce_list is None:
+        with open(log_name, 'w+') as log_obj:
+            log_obj.write(f'Not lightkurve data found for TIC_ID: {ticid}')
 
-    except FileExistsError:
-        pass
+        return None
 
-    except PermissionError as e:
-        log_obj = open(log_name, 'w+')
-        log_obj.write("Permission Error on Target Directory ")
-        log_obj.write(e)
-        log_obj.close()
+    if plot:
+        plot_filename = "tic%09i-%s-plot.png" % (ticid, run_tag)
+        plot_filepath = os.path.join(out_dir, target_dir, plot_filename, bbox_inches='tight')
+        plt.close()
 
-    try:
-        tce_list, result_strings, metrics_list = pipeline.search_and_vet_one(ticid, sector, lc_author, config,
-                                                                             vetter_list, thresholds, plot=plot)
-
-        if plot:
-            plotfilename = "tic%09i-%s-plot.png" % (ticid, run_tag)
-            plt.savefig(out_dir + target_dir + plotfilename, bbox_inches='tight')
-            plt.close()
-
-        output_obj = open(output_file, 'w')
+    with open(output_file, 'w') as output_obj:
         for r in result_strings:
             output_obj.write(r)
 
-        output_obj.close()
+    for tce in tce_list:
+        tce_filename = "tic%09i-%02i-%s.json" % (ticid, int(tce['event']), run_tag)
+        full_filename = os.path.join(out_dir, target_dir, tce_filename)
+        tce.to_json(full_filename)
 
-        for tce in tce_list:
-            tcefilename = "tic%09i-%02i-%s.json" % (ticid,
-                                                    int(tce['event']),
-                                                    run_tag)
-
-            full_filename = out_dir + target_dir + tcefilename
-            tce.to_json(full_filename)
-
-        log_obj = open(log_name, 'w+')
-        log_obj.write("Success.")
-        log_obj.close()
-
-    except Exception as e:
-        log_obj = open(log_name, 'w+')
-        log_obj.write("Failed to create TCEs for TIC %i for Sector %i" % (ticid, sector))
-        log_obj.write(str(e))
-        log_obj.close()
+    with open(log_name, 'w+') as log_obj:
+        log_obj.write('Success.')
 
 
 def load_def_config():

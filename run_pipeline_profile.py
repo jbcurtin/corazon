@@ -1,17 +1,8 @@
-def test_pipeline_1():
-    import tempfile
-
-    from corazon import run_pipeline
-
-    tic_id = 383724012
-    sector = 14
-    out_dir = tempfile.NamedTemporaryFile().name
-    run_pipeline.run_write_one(tic_id, sector, out_dir)
-
 import json
 import requests
 import sys
 import typing
+import shutil
 
 from urllib.parse import urlencode, quote
 def mast_query(tic_id: int) -> typing.Any:
@@ -86,29 +77,71 @@ def parse_mast_csv(filepath: str) -> types.GeneratorType:
 
             yield datum
 
-def test_concurrent_pipeline():
+def source_sectors():
     import os
-    import shutil
     import tempfile
+    import time
 
     from corazon import run_pipeline
 
     from tess_stars2px import tess_stars2px_function_entry
 
     filepath = './tess-data/CTLv8_0_287_713310_43_634668.csv'
+    output_filepath = './tess-data/tic-and-sectors.csv'
+
+    with open(output_filepath, 'w') as stream:
+        writer = csv.writer(stream)
+        writer.writerow(['tic', 'sector'])
+        for row in parse_mast_csv(filepath):
+            print(f'Sourcing Data: %s' % row['tic-id'])
+            outId, outEclipLong, outEclipLat, outSec, outCam, outCcd, outColPix, \
+                outRowPix, scinfo = tess_stars2px_function_entry(row['tic-id'], float(row['ra']), float(row['dec']))
+
+            for idx in range(0, len(outId)):
+                tic_id = outId[idx]
+                sector = outSec[idx]
+                writer.writerow([tic_id, sector])
+
+            time.sleep(1)
+
+def test_concurrent_pipeline():
+    import os
+    import tempfile
+
+    from corazon import run_pipeline
+
+    from tess_stars2px import tess_stars2px_function_entry
+
+    filepath = './tess-data/tic-and-sectors.csv'
     base_out_dir = '/tmp/lightkurves'
     if os.path.exists(base_out_dir):
         shutil.rmtree(base_out_dir)
 
-    for row in parse_mast_csv(filepath):
-        outId, outEclipLong, outEclipLat, outSec, outCam, outCcd, outColPix, \
-            outRowPix, scinfo = tess_stars2px_function_entry(row['tic-id'], float(row['ra']), float(row['dec']))
-        for idx in range(0, len(outId)):
-            tic_id = outId[idx]
-            sector = outSec[idx]
-            print(f'Testing TIC:{tic_id} - Sector: {sector}')
+    with open(filepath, 'r') as stream:
+        reader = csv.reader(stream)
+        next(reader)
+        for row in reader:
+            tic_id = int(row[0])
+            sector = int(row[1])
             tic_folder = os.path.join(base_out_dir, str(tic_id), str(sector))
+            print(f'Run tIC[{tic_id}], Sector[{sector}]')
             if not os.path.exists(tic_folder):
                 os.makedirs(tic_folder)
 
             run_pipeline.run_write_one(tic_id, sector, tic_folder)
+
+def single_curve():
+    from corazon import run_pipeline
+
+    tic_id = 383724012
+    sector = 14
+    out_dir = '/tmp/tic-single'
+    run_pipeline.run_write_one(tic_id, sector, out_dir)
+
+
+
+if __name__ == '__main__':
+    # source_sectors()
+    # test_concurrent_pipeline()
+    single_curve()
+

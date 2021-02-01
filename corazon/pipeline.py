@@ -1,6 +1,6 @@
 __all__ = ['search_and_vet_one', 'vet_tce', 'vet_all_tces', 'get_disposition', 'load_def_config', 'load_def_vetter']
 
-import astropy.units as u
+from astropy import units
 
 import corazon.planetSearch as ps
 import corazon.gen_lightcurve as genlc
@@ -82,6 +82,9 @@ def search_and_vet_one(ticid, sector, lc_author, config, vetter_list,
 
     """
     lcdata = genlc.hlsp(ticid, sector, author='qlp')
+
+    if lcdata is None:
+        return None, None, None
 
     time = lcdata.time.value
     flux = lcdata.flux.value
@@ -197,9 +200,9 @@ def vet_all_tces(lc, tce_dict_list, ticid, vetter_list, thresholds, plot=False):
     tce_list = []
     pn = 1
     for item in tce_dict_list:
-        tce = TCE.Tce(period=item[0] * u.day, epoch=item[1] * u.day,
+        tce = TCE.Tce(period=item[0] * units.day, epoch=item[1] * units.day,
                       depth=item[2] * const.frac_amp,
-                      duration=item[3] * u.day,
+                      duration=item[3] * units.day,
                       epoch_offset=const.string_to_offset[lcformat],
                       snr=item[4],
                       target=f"TIC {ticid}",
