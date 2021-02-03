@@ -36,22 +36,35 @@ jobs:
             python: 3.x
             toxenv: securityaudit
 
-          # UNCOMMENT TO ENABLE
-          #- name: Python 3.7 with oldest supported dependencies
-          #  os: ubuntu-latest
-          #  python: 3.7
-          #  toxenv: py37-test-oldestdeps
+          - name: Windows - Python 3.7
+            os: windows-latest
+            python: 3.7
+            toxenv: py37-test
 
-          # APPEND -cov TO toxenv FOR COVERAGE
+          - name: Windows - Python 3.8
+            os: windows-latest
+            python: 3.8
+            toxenv: py38-test
+
           - name: Linux - Python 3.7
             os: ubuntu-latest
             python: 3.7
             toxenv: py37-test
 
+          - name: Linux - Python 3.8
+            os: ubuntu-latest
+            python: 3.8
+            toxenv: py38-test
+
           - name: OS X - Python 3.7
             os: macos-latest
             python: 3.7
             toxenv: py37-test
+
+          - name: OS X - Python 3.8
+            os: macos-latest
+            python: 3.8
+            toxenv: py38-test
 
     steps:
     - name: Checkout code
