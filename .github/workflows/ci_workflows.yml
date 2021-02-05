@@ -61,11 +61,6 @@ jobs:
             python: 3.7
             toxenv: py37-test
 
-          - name: OS X - Python 3.8
-            os: macos-latest
-            python: 3.8
-            toxenv: py38-test
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
