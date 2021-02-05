@@ -64,3 +64,4 @@ pip-wheel-metadata/
 lib
 lib64
 pyvenv.cfg
+coverage.xml
